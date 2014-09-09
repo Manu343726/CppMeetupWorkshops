@@ -47,9 +47,9 @@ int main()
  
 Reflection, the ability of some programming languages to inspect type and code information at runtime and modify it, could be another type of metaprogramming.
 
-    * * *
+* * *
 
-    ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#c-template-metaprogramming)C++ Template Metaprogramming
+## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#c-template-metaprogramming)C++ Template Metaprogramming
 
 Template metaprogramming, sometimes shorted to _tmp_, consists in **using the C++ template system to generate C++ types, and C++ code in the process**.
 
@@ -94,9 +94,9 @@ _Note that the generated classes `foo_int` and `foo_char` are not written in
 
 As you can see, the C++ template system actually generates code. We, as C++ _metaprogrammers_, explode this to generate some code automatically.
 
-    * * *
+* * *
 
-    ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#metafunctions)Metafunctions
+## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#metafunctions)Metafunctions
 
 In the C preprocessor example, we introduced the concept of _metafunction_. In general a metafunction is a function working in the specific metaprogramming domain we are. In the case of C preprocessor, we manipulate C sourcecode explicitly, so its metafunctions (macros) take and manipulate C source.
 
@@ -134,7 +134,9 @@ std::integral_constant<int,-2>
 
 There are a few possible solutions to this problem:
 
- - **Use aliases to the result instead of the metafunction itself**: Since C++11 we have *template aliases*, a kind of parametrized typedef. We can use them to write *user-side metafunctions*:
+### Use aliases to the result instead of the metafunction itself
+
+Since C++11 we have *template aliases*, a kind of parametrized typedef. We can use them to write *user-side metafunctions*:
  
 ``` cpp
  template<typename LHS , typename RHS>
@@ -146,7 +148,10 @@ There are a few possible solutions to this problem:
 using t = add<std::integral_constant<int,1>,add<std::integral_constant<int,-2>,std::integral_constant<int,-4>>;
 ```
  
- - **Build an expression evaluation system**: The above approach hides the machinery to the user. But hidding means that those user side metafunctions are not metafunctions but aliases to their result. That means we cannot use user-side aliases in contexts expecting metafunctions: **User-side metafunctions are not first class functions**. 
+### Build an expression evaluation system
+
+The above approach hides the machinery to the user. But hidding means that those user side metafunctions are not metafunctions but aliases to their result. That means we cannot use user-side aliases in contexts expecting metafunctions: **User-side metafunctions are not first class functions**. 
+
 Instead, we could build an expression evaluation system which takes an expresssion (A template with its parameters) and evaluate it saying *"Is this a metafunction? Ok, so I should get its result via `typename ::type`"*. This approach has the advantage that one could customize the evaluation and design it for many complex cases. The simplest one, before evaluate a metafunction evaluate its parameters.
 
 This is what I did for Turbo, and Boost.MPL.Lambda takes a similar approach:
@@ -155,18 +160,7 @@ This is what I did for Turbo, and Boost.MPL.Lambda takes a similar approach:
 using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<2>>; // t is tml::Int<3> (std::integral_constant<int,3>)
 ```
 
----
-
-Metafunctions are not a new thing. Even the Standard Library provides many, we usually call them _type traits_:
-
-``` cpp
-using t = typename std::remove_reference<int&>::type; //t is int
-```
-
-As you can see that templates provided since C++11 are, from the tmp point of view, metafunctions.  
-**_You were doing template metaprogramming without knowing it!_**
-
-    * * *
+* * *
 
 ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#a-haskell-like-language-inside-c)A Haskell-like language inside C++
 
