@@ -5,8 +5,9 @@
 
 ## Preface
 
-Template metaprogramming is one of the things that makes C++ that complex, poor known, and sometimes a horrible language. However, its power and expressiveness are some of the best features of C++.
-Extensible and fully generic C++ libraries aren't possible without template metapogramming. Even the Standard Library implementations hide many template metaprogramming tricks to make standard containers and algorithms that generic, high level, and efficient tools we use everyday.
+Template metaprogramming is one of the things that makes C++ that complex, poor known, and sometimes a horrible language. However, its power and expressiveness are some of the best features of C++.  
+
+Extensible and fully generic C++ libraries aren't possible without template metapogramming. Even the Standard Library implementations hide many template metaprogramming tricks to make standard containers and algorithms that generic, high level, and efficient tools we use everyday.  
 The fact that tmp is a powerful tool can be seen in the evolution of the language, which now has features designed to improve metaprogramming, see C++11 `<type_traits>`, C++11 variadic templates, C++14 variable templates, C++14`std::integer_sequence`, etc.
 
 But C++ template metaprogramming power comes at a high cost: Its really hard to do and understand. The template system was not originally designed to do such things, and that's reflected primarily in the cumbersome syntax involved and the cryptic error messages one get when something fails. Those are the reasons why people is usually scared by tmp, and most of us doesn't even try to use it.
