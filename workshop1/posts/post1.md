@@ -19,9 +19,10 @@ These posts try to introduce template metaprogramming to the average C++ program
 
 From Wikipedia:
 > Metaprogramming is the writing of computer programs that write or manipulate other programs (or themselves) as their data, or that do part of the work at compile time that would otherwise be done at runtime.
+
 So instead of writing code that is compiled and does something at run-time (i.e. represents some actions to be done at run-time), we write code (_meta-code?_) that generates code. Let me show you a simple example:
 
-``` cpp
+``` c
 #define MIN(x,y) (((x) > (y)) ? (x) : (y))
 ```
 
@@ -50,10 +51,10 @@ Reflection, the ability of some programming languages to inspect type and code i
 
     ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#c-template-metaprogramming)C++ Template Metaprogramming
 
-    Template metaprogramming, sometimes shorted to _tmp_, consists in **using the C++ template system to generate C++ types, and C++ code in the process**.
+Template metaprogramming, sometimes shorted to _tmp_, consists in **using the C++ template system to generate C++ types, and C++ code in the process**.
 
-    Consider what a C++ template is: As the name says, **it's only a template**. A template function is not a function at all, it is **a template to generate functions**, and the same for class templates.
-    That wonderful thing we all love, `std::vector`, is not a class. Is a template designed to generate a correct vector class for each type. When we **_instance_** a template, like `std::vector<int>`, then the compiler generates the code for a vector of ints, following the template the Standard Library developer provided.
+Consider what a C++ template is: As the name says, **it's only a template**. A template function is not a function at all, it is **a template to generate functions**, and the same for class templates.  
+That wonderful thing we all love, `std::vector`, is not a class. Is a template designed to generate a correct vector class for each type. When we **_instance_** a template, like `std::vector<int>`, then the compiler generates the code for a vector of ints, following the template the Standard Library developer provided.
 
 So if we write a template `foo` parameterized</span> with a type parameter:
     
@@ -91,15 +92,15 @@ typedef foo_char foochar;
     
 _Note that the generated classes `foo_int` and `foo_char` are not written in your source file at all, like what the C preprocessor does. The template instantiation is managed internally by the compiler. I wrote them in that way to make a clear example._
 
-    As you can see, the C++ template system actually generates code. We, as C++ _metaprogrammers_, explode this to generate some code automatically.
+As you can see, the C++ template system actually generates code. We, as C++ _metaprogrammers_, explode this to generate some code automatically.
 
     * * *
 
     ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#metafunctions)Metafunctions
 
-    In the C preprocessor example, we introduced the concept of _metafunction_. In general a metafunction is a function working in the specific metaprogramming domain we are. In the case of C preprocessor, we manipulate C sourcecode explicitly, so its metafunctions (macros) take and manipulate C source.
+In the C preprocessor example, we introduced the concept of _metafunction_. In general a metafunction is a function working in the specific metaprogramming domain we are. In the case of C preprocessor, we manipulate C sourcecode explicitly, so its metafunctions (macros) take and manipulate C source.
 
-    In C++ template metaprogramming we work with types, so a metafunction is a function working with types. C++ templates could take non-type parameters too, but its hard to be generic using heterogeneous categories of template parameters. Instead, we will work with type parameters only whenever possible.
+In C++ template metaprogramming we work with types, so a metafunction is a function working with types. C++ templates could take non-type parameters too, but its hard to be generic using heterogeneous categories of template parameters. Instead, we will work with type parameters only whenever possible.
 
 ``` cpp
  template<typename T>
@@ -117,16 +118,46 @@ We can _"call"_ that metafunction referencing its member type `type`:
 using t = typename identity<int>::type; // t is int
 ```
 
-Also, it's a good practice to use a template alias to reference metafunctions, to avoid the `typename ::type` construction:
-    
-``` cpp
-template<typename T>
-using identity_t = typename identity<T>::type;
-```
-    
-But you should be careful with that pattern, since template aliases are not templates nor types, so we can't apply partial specialization on them, among other problems we will discuss later in other posts. What I usually do is to declare the metafunction in an `impl`ementation nested namespace, and the result alias in the main namespace, using the same name for both entities.
+Of course nested metafunction *calls* are possible:
 
-Such C++ metafunctions are not a new thing. Even the Standard Library provides many, we usually call them _type traits_:
+``` cpp
+using t = typename identity<typename identity<int>::type>::type; //t is int
+```
+
+But that `typename ::type` syntax doesn't scale well. Consider a more complex example:
+
+``` cpp
+using t = typename add<typename add<std::integral_constant<int,1>,std::integral_constant<int,2>>::type,
+std::integral_constant<int,-2>
+>::type;
+```
+
+There are a few possible solutions to this problem:
+
+ - **Use aliases to the result instead of the metafunction itself**: Since C++11 we have *template aliases*, a kind of parametrized typedef. We can use them to write *user-side metafunctions*:
+ 
+``` cpp
+ template<typename LHS , typename RHS>
+ using add = typename impl::add<LHS,RHS>::type;
+```
+  Where `add` is the *metafunction* for the user, and `impl::add` is the class template that actually implements the metafunction. This allows us to write nested expressions in a clear way:
+  
+``` cpp
+using t = add<std::integral_constant<int,1>,add<std::integral_constant<int,-2>,std::integral_constant<int,-4>>;
+```
+ 
+ - **Build an expression evaluation system**: The above approach hides the machinery to the user. But hidding means that those user side metafunctions are not metafunctions but aliases to their result. That means we cannot use user-side aliases in contexts expecting metafunctions: **User-side metafunctions are not first class functions**. 
+Instead, we could build an expression evaluation system which takes an expresssion (A template with its parameters) and evaluate it saying *"Is this a metafunction? Ok, so I should get its result via `typename ::type`"*. This approach has the advantage that one could customize the evaluation and design it for many complex cases. The simplest one, before evaluate a metafunction evaluate its parameters.
+
+This is what I did for Turbo, and Boost.MPL.Lambda takes a similar approach:
+
+``` cpp
+using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<2>>; // t is tml::Int<3> (std::integral_constant<int,3>)
+```
+
+---
+
+Metafunctions are not a new thing. Even the Standard Library provides many, we usually call them _type traits_:
 
 ``` cpp
 using t = typename std::remove_reference<int&>::type; //t is int
@@ -137,10 +168,10 @@ As you can see that templates provided since C++11 are, from the tmp point of vi
 
     * * *
 
-    ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#a-haskell-like-language-inside-c)A Haskell-like language inside C++
+## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#a-haskell-like-language-inside-c)A Haskell-like language inside C++
 
-    Since we work with the C++ type system, using types as values for our computations, tmp works like a functional programming language; because metafunctions have no side effects: **We can only create types, not to modify existing ones**.
-    And like in a functional language, one of the pillars of tmp is **recursion**. In this case **_recursive template instantiations _**(Remember that name).
+Since we work with the C++ type system, using types as values for our computations, tmp works like a functional programming language; because metafunctions have no side effects: **We can only create types, not to modify existing ones**.
+And like in a functional language, one of the pillars of tmp is **recursion**. In this case **_recursive template instantiations _**(Remember that name).
     
 ``` cpp
 template<typename T>
