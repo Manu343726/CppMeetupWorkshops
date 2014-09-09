@@ -1,6 +1,6 @@
 # Template Metaprogramming with Modern C++: Introduction
 
-> *"Any sufficiently complex C++ code is indistingishable from trolling"*
+> *"Any sufficiently complex C++ code is indistingishable from trolling"*  
 > Arthur C. Clarke
 
 ## Preface
