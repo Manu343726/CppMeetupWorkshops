@@ -163,7 +163,7 @@ using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<
 
 ### C++14 variable templates: Stop doing ugly template metaprogramming and use a natural syntax
 
-This last approach is aviable since C++14 thanks to *variable templates*. A variable template is a constant parametrized with a template. The canonical example is a `pi` constant aware of the precision of the type used:
+This last approach is available since C++14 thanks to *variable templates*. A variable template is a constant parametrized with a template. The canonical example is a `pi` constant aware of the precision of the type used:
 
 ``` cpp
 template<typename T>
