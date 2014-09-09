@@ -152,15 +152,32 @@ using t = add<std::integral_constant<int,1>,add<std::integral_constant<int,-2>,s
 
 The above approach hides the machinery to the user. But hidding means that those user side metafunctions are not metafunctions but aliases to their result. That means we cannot use user-side aliases in contexts expecting metafunctions: **User-side metafunctions are not first class functions**. 
 
-Instead, we could build an expression evaluation system which takes an expresssion (A template with its parameters) and evaluate it saying *"Is this a metafunction? Ok, so I should get its result via `typename ::type`"*. This approach has the advantage that one could customize the evaluation and design it for many complex cases. The simplest one, before evaluate a metafunction evaluate its parameters.
+Instead, we could build an expression evaluation system which takes an expresssion (A template with its parameters) and evaluate it saying *"Is this a metafunction? Ok, so I should get its result via `typename ::type`"*. This approach has the advantage that one could customize the evaluation and design it for many complex cases. The simplest one, before evaluating a metafunction evaluate its parameters.
 
-This is what I did for Turbo, and Boost.MPL.Lambda takes a similar approach:
+This is what I did for [Turbo](https://github.com/Manu343726/Turbo), and Boost.MPL.Lambda takes a similar approach:
 
 ``` cpp
-using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<2>>; // t is tml::Int<3> (std::integral_constant<int,3>)
+//t is tml::Int<3> (std::integral_constant<int,3>)
+using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<2>>;
 ```
 
-* * *
+### C++14 variable templates: Stop doing ugly template metaprogramming and use a natural syntax
+
+This last approach is aviable since C++14 thanks to *variable templates*. A variable template is a constant parametrized with a template. The canonical example is a `pi` constant aware of the precision of the type used:
+
+``` cpp
+template<typename T>
+constexpr T pi = 3.141592654;
+
+float radious = 1.0f;
+float circle  = pi<float>*pi<float>*radious;
+```
+
+Variable templates are **values parametrized with templates**, instead of types. So we can use `constexpr` functions instead of template metafunctions to operate even with types (Imagine a variable template acting as a box for a type).
+
+See [Boost.Hanna](https://github.com/ldionne/hana) for an example of this approach.
+
+---
 
 ## [](https://github.com/Manu343726/CppMeetupWorkshops/blob/master/workshop1/posts/post1.md#a-haskell-like-language-inside-c)A Haskell-like language inside C++
 
