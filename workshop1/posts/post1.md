@@ -128,8 +128,8 @@ But that `typename ::type` syntax doesn't scale well. Consider a more complex ex
 
 ``` cpp
 using t = typename add<typename add<std::integral_constant<int,1>,std::integral_constant<int,2>>::type,
-std::integral_constant<int,-2>
->::type;
+                       std::integral_constant<int,-2>
+                      >::type;
 ```
 
 There are a few possible solutions to this problem:
