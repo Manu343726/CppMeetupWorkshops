@@ -50,15 +50,15 @@ Consider what a C++ template is: As the name says, <strong>it's only a template
 That wonderful thing we all love, <code>std::vector</code>, is not a class. Is a template designed to generate a correct vector class for each type. When we <strong><em>instance</em></strong> a template, like <code>std::vector&lt;int&gt;</code>, then the compiler generates the code for a vector of ints, following the template the Standard Library developer provided.
 
 So if we write a template <code>foo</code> parameterized with a type parameter:
-<pre class="lang:default decode:true">template<typename T>
+<pre class="lang:default decode:true">template&lt;typename T&gt;
 struct foo
 {
     T elem;
 };
 </pre>
 and then that template is instanced:
-<pre class="lang:default decode:true">typedef foo<int> fooint;
-typedef foo<char> foochar;
+<pre class="lang:default decode:true">typedef foo&lt;int&gt; fooint;
+typedef foo&lt;char&gt; foochar;
 </pre>
 and the compiler generates different versions of the <code>foo</code> struct, <strong>one for each different combinations of template parameters</strong>:
 <pre class="lang:default decode:true">struct foo_int
@@ -85,7 +85,7 @@ Metafunctions</h2>
 In the C preprocessor example, we introduced the concept of <em>metafunction</em>. In general a metafunction is a function working in the specific metaprogramming domain we are. In the case of C preprocessor, we manipulate C sourcecode explicitly, so its metafunctions (macros) take and manipulate C source.
 
 In C++ template metaprogramming we work with types, so a metafunction is a function working with types. C++ templates could take non-type parameters too, but its hard to be generic using heterogeneous categories of template parameters. Instead, we will work with type parameters only whenever possible.
-<pre class="lang:default decode:true"> template<typename T>
+<pre class="lang:default decode:true"> template&lt;typename T&gt;
  struct identity
  {
      using type = T;
@@ -94,24 +94,24 @@ In C++ template metaprogramming we work with types, so a metafunction is a funct
 The template <code>identity</code> is a metafunction representing the identity function: Takes a value (Actually a type, since we work with types) and returns itself untouched.
 
 We can <em>"call"</em> that metafunction referencing its member type <code>type</code>:
-<pre class="lang:default decode:true">using t = typename identity<int>::type; // t is int
+<pre class="lang:default decode:true">using t = typename identity&lt;int&gt;::type; // t is int
 </pre>
 Of course nested metafunction <em>calls</em> are possible:
-<pre class="lang:default decode:true">using t = typename identity<typename identity<int>::type>::type; //t is int
+<pre class="lang:default decode:true">using t = typename identity&lt;typename identity&lt;int&gt;::type&gt;::type; //t is int
 </pre>
 But that <code>typename ::type</code> syntax doesn't scale well. Consider a more complex example:
-<pre class="lang:default decode:true">using t = typename add<typename add<std::integral_constant<int,1>,std::integral_constant<int,2>>::type,
-                       std::integral_constant<int,-2>
-                      >::type;
+<pre class="lang:default decode:true">using t = typename add&lt;typename add&lt;std::integral_constant&lt;int,1&gt;,std::integral_constant&lt;int,2&gt;&gt;::type,
+                       std::integral_constant&lt;int,-2&gt;
+                      &gt;::type;
 </pre>
 There are a few possible solutions to this problem:
 <h3><a class="anchor" href="#use-aliases-to-the-result-instead-of-the-metafunction-itself" name="user-content-use-aliases-to-the-result-instead-of-the-metafunction-itself"></a>Use aliases to the result instead of the metafunction itself</h3>
 Since C++11 we have <em>template aliases</em>, a kind of parametrized typedef. We can use them to write <em>user-side metafunctions</em>:
-<pre class="lang:default decode:true"> template<typename LHS , typename RHS>
- using add = typename impl::add<LHS,RHS>::type;
+<pre class="lang:default decode:true"> template&lt;typename LHS , typename RHS&gt;
+ using add = typename impl::add&lt;LHS,RHS&gt;::type;
 </pre>
 Where <code>add</code> is the <em>metafunction</em> for the user, and <code>impl::add</code> is the class template that actually implements the metafunction. This allows us to write nested expressions in a clear way:
-<pre class="lang:default decode:true">using t = add<std::integral_constant<int,1>,add<std::integral_constant<int,-2>,std::integral_constant<int,-4>>;
+<pre class="lang:default decode:true">using t = add&lt;std::integral_constant&lt;int,1&gt;,add&lt;std::integral_constant&lt;int,-2&gt;,std::integral_constant&lt;int,-4&gt;&gt;;
 </pre>
 <h3><a class="anchor" href="#build-an-expression-evaluation-system" name="user-content-build-an-expression-evaluation-system"></a>Build an expression evaluation system</h3>
 The above approach hides the machinery to the user. But hidding means that those user side metafunctions are not metafunctions but aliases to their result. That means we cannot use user-side aliases in contexts expecting metafunctions: <strong>User-side metafunctions are not first class functions</strong>.
@@ -119,16 +119,16 @@ The above approach hides the machinery to the user. But hidding means that those
 Instead, we could build an expression evaluation system which takes an expresssion (A template with its parameters) and evaluate it saying <em>"Is this a metafunction? Ok, so I should get its result via <code>typename ::type</code>"</em>. This approach has the advantage that one could customize the evaluation and design it for many complex cases. The simplest one, before evaluating a metafunction evaluate its parameters.
 
 This is what I did for <a href="https://github.com/Manu343726/Turbo">Turbo</a>, and Boost.MPL.Lambda takes a similar approach:
-<pre class="lang:default decode:true">//t is tml::Int<3> (std::integral_constant<int,3>)
-using t = tml::eval<tml::lambda<_1,_2 , tml::add<_1,_2>> , tml::Int<1>,tml::Int<2>>;
+<pre class="lang:default decode:true">//t is tml::Int&lt;3&gt; (std::integral_constant&lt;int,3&gt;)
+using t = tml::eval&lt;tml::lambda&lt;_1,_2 , tml::add&lt;_1,_2&gt;&gt; , tml::Int&lt;1&gt;,tml::Int&lt;2&gt;&gt;;
 </pre>
 <h3><a class="anchor" href="#c14-variable-templates-stop-doing-ugly-template-metaprogramming-and-use-a-natural-syntax" name="user-content-c14-variable-templates-stop-doing-ugly-template-metaprogramming-and-use-a-natural-syntax"></a>C++14 variable templates: Stop doing ugly template metaprogramming and use a natural syntax</h3>
 This last approach is available since C++14 thanks to <em>variable templates</em>. A variable template is a constant parametrized with a template. The canonical example is a <code>pi</code> constant aware of the precision of the type used:
-<pre class="lang:default decode:true">template<typename T>
+<pre class="lang:default decode:true">template&lt;typename T&gt;
 constexpr T pi = 3.141592654;
 
 float radious = 1.0f;
-float circle  = pi<float>*pi<float>*radious;
+float circle  = pi&lt;float&gt;*pi&lt;float&gt;*radious;
 </pre>
 Variable templates are <strong>values parametrized with templates</strong>, instead of types. So we can use <code>constexpr</code> functions instead of template metafunctions to operate even with types (Imagine a variable template acting as a box for a type).
 
@@ -140,37 +140,37 @@ See <a href="https://github.com/ldionne/hana">Boost.Hanna</a> for an example of 
 A Haskell-like language inside C++</h2>
 Since we work with the C++ type system, using types as values for our computations, tmp works like a functional programming language; because metafunctions have no side effects: <strong>We can only create types, not to modify existing ones</strong>.
 And like in a functional language, one of the pillars of tmp is <strong>recursion</strong>. In this case <strong><em>recursive template instantiations </em></strong>(Remember that name).
-<pre class="lang:default decode:true">template<typename T>
+<pre class="lang:default decode:true">template&lt;typename T&gt;
 struct throw_stars
 {
     using type = T;
 }; 
 
-template<typename T>
-struct throw_stars<T*>
+template&lt;typename T&gt;
+struct throw_stars&lt;T*&gt;
 {
-    using type = typename throw_stars<T>::type;
+    using type = typename throw_stars&lt;T&gt;::type;
 };
 </pre>
 I think the classic factorial/Fibonacci metafunctions examples are so boring. Here is something more interesting: The template <code>throw_stars</code> is a metafunction that takes a type and throws away all the <em>"stars"</em>.
-<pre class="lang:default decode:true">using t = typename throw_stars<int********>::type; //t is int 
+<pre class="lang:default decode:true">using t = typename throw_stars&lt;int********&gt;::type; //t is int 
 </pre>
 The template specialization acts as the recursive case, and the main template as the base case. Note how C++ template specialization behaves like pattern matching.
 
 Another example could be traversing of C++11 variadic packs:
-<pre class="lang:default decode:true">template<typename HEAD , typename... TAIL>
+<pre class="lang:default decode:true">template&lt;typename HEAD , typename... TAIL&gt;
 struct last
 {
-    using type = typename last<TAIL...>::type;
+    using type = typename last&lt;TAIL...&gt;::type;
 };
 
-template<typename T>
-struct last<T>
+template&lt;typename T&gt;
+struct last&lt;T&gt;
 {
     using type = T;
 };
 
-using t = typename last<int,char,bool,double>::type; //t is double
+using t = typename last&lt;int,char,bool,double&gt;::type; //t is double
 </pre>
 which is a great example of a <code>head:tail</code> approach for list traversing common in functional languages.
 
@@ -187,5 +187,6 @@ In this first approach to C++ template metaprogramming we have seen that:
 </ul>
 Now we have a good overview of what C++ template metaprogramming is, but we need some C++ knowledge before getting into it.
 The next time we will learn C++ templates in depth: Template parameters, template specialization, SFINAE, etc; to make sure we all have and understand the necessary tools to do proper metaprogramming in Modern C++.
+
 
 </article>
