@@ -75,6 +75,7 @@ main:                                   # @main
 	movl	$55, %eax
 	movl	$0, -4(%rsp)
 	ret
-
 ```
+Only a hardcoded 55. Do you see code bloating here?
+
 
