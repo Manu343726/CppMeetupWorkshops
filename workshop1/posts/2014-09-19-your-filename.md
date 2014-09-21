@@ -53,3 +53,28 @@ struct fibonacci<1>
 	static conexpr value = 1;
 };
 ```
+This is the instantation tree for a `fibonacci<5>` template instance:
+
+TEMPLAR GRAPH HERE
+
+Thats what you would expect, right? Ok, but **thats not what the compiler does**. Enter memoization:
+
+TEMPLAR GRAPH HERE
+
+And then the fact that the compiler only generates the used code:
+
+``` cpp
+int main()
+{
+    return fibonacci<5>::value;
+}
+```
+[`GCC 4.9 -std=c++11 -O0` x86 target](http://goo.gl/OxoYNz):
+``` asm
+main:                                   # @main
+	movl	$55, %eax
+	movl	$0, -4(%rsp)
+	ret
+
+```
+
