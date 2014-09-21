@@ -32,7 +32,7 @@ Exactly the same occurs for class templates: The compiler generates one type (cl
 
 There is one point to be noted: Its true that the compiler generates one instantation for each combination of parameters, but **modern C++ compilers are smart enough to not generate executable code for templates that are not actually used in the program.** Also, modern compilers perform memoization for template instantation, which increases the performance of the template system. Both optimizations make invalid the old argumment saying that C++ templates increase executable size. **Thats not completely true, since the compiler only generates code for the things that are actually used**, after optimizations like inlining, etc.
 
-See for example the classic fibonnacci metafunction:
+See for example the classic fibonacci metafunction:
 
 ``` cpp
 template<int n>
@@ -77,5 +77,13 @@ main:                                   # @main
 	ret
 ```
 Only a hardcoded 55. Do you see code bloating here?
+
+## Template parameters
+
+C++ templates can take three kinds of parameters: **Value parameters, type parameters, and template template parameters**. *There are more cathegories (References, pointers, etc) but they are not as interesting as the former from the metaprogramming point of view.*
+
+### Value parameters
+
+First of all, C++ templates can take parameters that are **integral values known at compile time**. Say a `char`, an `unsigned int`, a `long int`, etc. The fibonacci example above is one case of template with value parameters only, an `int` in that case.
 
 
