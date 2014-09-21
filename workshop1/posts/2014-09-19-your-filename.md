@@ -26,4 +26,31 @@ int i = identity(0);
 ```
 
 the compiler instantiates the template using the correct parameters, an `int` type parameter in this case. 
-* Note how template parameters are inferred from the function argumments passed to the template function. This is wy when using function templates is not neccessary nor a good practice to pass template parameters explicitly. Only is needed in some cases when a parameter could not be inferred from the function argumments, see [`std::make_shared()`]() for an example.
+*Note how template parameters are inferred from the function argumments passed to the template function. This is wy when using function templates is not neccessary nor a good practice to pass template parameters explicitly. Only is needed in some cases when a parameter could not be inferred from the function argumments, see [`std::make_shared()`](http://en.cppreference.com/w/cpp/memory/shared_ptr/make_shared) for an example.*
+
+Exactly the same occurs for class templates: The compiler generates one type (class) and its corresponding code for each combination of template parameters.
+
+There is one point to be noted: Its true that the compiler generates one instantation for each combination of parameters, but **modern C++ compilers are smart enough to not generate executable code for templates that are not actually used in the program.** Also, modern compilers perform memoization for template instantation, which increases the performance of the template system. Both optimizations make invalid the old argumment saying that C++ templates increase executable size. **Thats not completely true, since the compiler only generates code for the things that are actually used**, after optimizations like inlining, etc.
+
+See for example the classic fibonnacci metafunction:
+
+``` cpp
+template<int n>
+struct fibonacci
+{
+	static constexpr int value = fibonacci<n-1>::value + fibonacci<n-2>::value;
+};
+
+template<>
+struct fibonacc<0>
+{
+	static constexpr value = 0;
+};
+
+template<>
+struct fibonacci<1>
+{
+	static conexpr value = 1;
+};
+```
+```
