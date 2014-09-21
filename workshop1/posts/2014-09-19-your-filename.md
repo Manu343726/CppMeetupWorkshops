@@ -53,4 +53,3 @@ struct fibonacci<1>
 	static conexpr value = 1;
 };
 ```
-```
