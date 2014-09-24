@@ -266,6 +266,10 @@ struct is_integral : public std::integral_constant<bool, index_of<T,list<short,i
 
 This thing (Storing a typelist of integral types and searching on it) is exactly what the libc++ Standard Library implementation does to implement the std::is_integral type trait. GCC's stdlibc++ on the other hand uses explicit template specializations, one for each integral type.
 
+Also, always be careful when writting and using that recursive metafunctions. The compiler has some limits, and breaking them could lead to some horrible errors like this:
+
+
+
 ### Template-template parameters
 
 The last cathegory is also the poor known cathegory of template parameters, possibly because its ugly syntax.
