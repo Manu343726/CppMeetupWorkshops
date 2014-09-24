@@ -67,25 +67,57 @@ This is the instantation tree for a `fibonacci<5>` template instance:
                         +--------+  +--------+
                         | fib<4> |  | fib<3> |
                         +--------+  +--------+
-                            /\
-                           /  ...
-                          /
-                         /
-                     +--------+
-                     | fib<3> |
-                     +--------+
-                         /\
-                        /  ...
-                       /
-                      /
-                     /
+                            /\          /\
+                           /  ...      /  \
+                          /           /    \
+                         /           /     
+                  +--------+  +--------+  +--------+
+                  | fib<3> |  | fib<2> |  | fib<1> |
+                  +--------+  +--------+  +--------+
+                       /\          /\
+                    ...  ...    ...  ...
 ```
 
 Thats what you would expect, right? Ok, but **thats not what the compiler does**. Enter memoization:
 
-TEMPLAR GRAPH HERE (NOT AVAILABLE)
+```
+                              +--------+
+                              | fib<5> |
+                              +--------+
+                                  /\
+                                 /  *
+                                /    
+                               /  
+                        +--------+
+                        | fib<4> |
+                        +--------+
+                            /\ 
+                           /  * 
+                          /  
+                         /  
+                  +--------+
+                  | fib<3> |
+                  +--------+
+                       /\
+                      /  *
+                     /
+                    /
+             +--------+
+             | fib<2> |
+             +--------+
+                 /\
+                /  \
+               /    \
+              /      \
+       +--------+  +--------+
+       | fib<1> |  | fib<0> |
+       +--------+  +--------+
 
-And then the fact that the compiler only generates code which actually does something (All syntactic sugar that high-level constructs provide is throwed away):
+```
+
+where `*` means the compiler selected the memoized (Instanced previously) template instead of doing the full instaintation again.
+
+Then the fact that the compiler only generates code which actually does something (All syntactic sugar that high-level constructs provide is throwed away):
 
 ``` cpp
 int main()
@@ -303,4 +335,4 @@ struct min
  - **Modern C++ compilers are smart enough to optimize the output of the template system and the execution of the template system itself**. Beware of modern compiler capabilites, don't tie yourself to old speaks. There are template-related problems, of course, but these are usually not. By default, there is no exponential and mind blowing executable size increase.
  - **There are three cathegories of template argumments**, each with their own use cases and properties. Combine them to have a powerful metaprogramming toolbox.
 
- Don't be afraid if you haven't understood some of the examples provided here. They are not intended to be simple, but to show use cases of template metaprogramming. Want to understand them completely? Come to the workshops!
+ Don't be afraid if you haven't understood some of the examples provided here. They are not intended to be simple, but to show use cases of template metaprogramming. Do you want to understand them completely? Come to the workshops!
