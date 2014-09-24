@@ -26,12 +26,12 @@ When the programmer uses that template:
 int i = identity(0);
 ```
 
-the compiler instantiates the template using the correct parameters, an `int` type parameter in this case. 
+the compiler instaintiates the template using the correct parameters, an `int` type parameter in this case. 
 *Note how template parameters are inferred from the function argumments passed to the template function. This is why when using function templates is not neccessary nor a good practice to pass template parameters explicitly. Only is needed in some cases when a parameter could not be inferred from the function argumments, see [`std::make_shared()`](http://en.cppreference.com/w/cpp/memory/shared_ptr/make_shared) for an example.*
 
 Exactly the same occurs for class templates: The compiler generates one type (class) and its corresponding code for each combination of template parameters.
 
-There is one point to be noted: Its true that the compiler generates one instantation for each combination of parameters, but **modern C++ compilers are smart enough to not generate executable code for templates that are not actually used in the program.** Also, modern compilers perform memoization during template instantation, which increases the performance of the template system. Both optimizations make invalid the old argumment saying that C++ templates increase executable size. **Thats not completely true, since the compiler only generates code for the things that are actually used**, after optimizations like inlining, dead code elimination, etc.
+There is one point to be noted: Its true that the compiler generates one instantation for each combination of parameters, but **modern C++ compilers are smart enough to not generate executable code for templates that are not actually used in the program.** Also, modern compilers perform memoization during template instantiation, which increases the performance of the template system. Both optimizations make invalid the old argumment saying that C++ templates increase executable size. **Thats not completely true, since the compiler only generates code for the things that are actually used**, after optimizations like inlining, dead code elimination, etc.
 
 See for example the classic fibonacci metafunction:
 
@@ -56,11 +56,34 @@ struct fibonacci<1>
 ```
 This is the instantation tree for a `fibonacci<5>` template instance:
 
-TEMPLAR GRAPH HERE
+```
+                              +--------+
+                              | fib<5> |
+                              +--------+
+                                  /\
+                                 /  \
+                                /    \
+                               /      \
+                        +--------+  +--------+
+                        | fib<4> |  | fib<3> |
+                        +--------+  +--------+
+                            /\
+                           /  ...
+                          /
+                         /
+                     +--------+
+                     | fib<3> |
+                     +--------+
+                         /\
+                        /  ...
+                       /
+                      /
+                     /
+```
 
 Thats what you would expect, right? Ok, but **thats not what the compiler does**. Enter memoization:
 
-TEMPLAR GRAPH HERE
+TEMPLAR GRAPH HERE (NOT AVAILABLE)
 
 And then the fact that the compiler only generates code which actually does something (All syntactic sugar that high-level constructs provide is throwed away):
 
@@ -213,7 +236,7 @@ This thing (Storing a typelist of integral types and searching on it) is exactly
 
 ### Template-template parameters
 
-The last cathegory is also the poor known cathegory of template parameter, possibly because its ugly syntax.
+The last cathegory is also the poor known cathegory of template parameters, possibly because its ugly syntax.
 
 A template-template parameter its a C++ template parameter which **represents not a type nor a value, but a template itself**:
 
@@ -222,7 +245,7 @@ template<template<typename> class T>
 struct foo{};
 ```
 
-`foo` is a template expecting a template with one type parameter only as parameter. So `foo` can take something like this `bar` as template parameter:
+`foo` is a template expecting a template with one type parameter only. So `foo` can take something like this `bar` as template parameter:
 
 ``` cpp
 template<typename T>
@@ -279,3 +302,5 @@ struct min
 
  - **Modern C++ compilers are smart enough to optimize the output of the template system and the execution of the template system itself**. Beware of modern compiler capabilites, don't tie yourself to old speaks. There are template-related problems, of course, but these are usually not. By default, there is no exponential and mind blowing executable size increase.
  - **There are three cathegories of template argumments**, each with their own use cases and properties. Combine them to have a powerful metaprogramming toolbox.
+
+ Don't be afraid if you haven't understood some of the examples provided here. They are not intended to be simple, but to show use cases of template metaprogramming. Want to understand them completely? Come to the workshops!
