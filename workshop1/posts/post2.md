@@ -268,7 +268,9 @@ This thing (Storing a typelist of integral types and searching on it) is exactly
 
 Also, always be careful when writting and using that recursive metafunctions. The compiler has some limits, and breaking them could lead to some horrible errors like this:
 
+![Don't try to generate a 10.000 elements long integer sequence...](https://imageshack.com/i/ipQahyw7p)
 
+And thats only the header of the error, it was really two hundreds of lines long. Remember that "*Template instaintation depth reached max of X*" error. Will be one of your best friends when doing template metaprogramming.
 
 ### Template-template parameters
 
