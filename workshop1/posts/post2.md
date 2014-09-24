@@ -62,7 +62,7 @@ Thats what you would expect, right? Ok, but **thats not what the compiler does**
 
 TEMPLAR GRAPH HERE
 
-And then the fact that the compiler only generates the used code:
+And then the fact that the compiler only generates code which actually does something (All syntactic sugar that high-level constructs provide is throwed away):
 
 ``` cpp
 int main()
